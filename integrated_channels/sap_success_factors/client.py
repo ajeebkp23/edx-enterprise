@@ -6,6 +6,7 @@ from __future__ import absolute_import, unicode_literals
 import datetime
 import requests
 import slumber
+import time
 
 from integrated_channels.sap_success_factors.models import SAPSuccessFactorsGlobalConfiguration
 
@@ -38,21 +39,21 @@ class SAPSuccessFactorsAPIClient(slumber.API):
 
         response = requests.post(
             url,
-            data={
+            json={
                 'grant_type': 'client_credentials',
                 'scope': {
                     'userId': user_id,
                     'companyId': company_id,
-                    'userType': 'user',
+                    'userType': 'admin',
                     'resourceType': 'learning_public_api',
                 }
             },
-            auth=(client_id, client_secret)
+            auth=(client_id, client_secret),
+            headers={'content-type': 'application/json'}
         )
 
         data = response.json()
-
         try:
-            return data['access_token'], datetime.datetime.utcfromtimestamp(data['expiresIn'])
-        except KeyError:
+            return data['access_token'], datetime.datetime.utcfromtimestamp(data['expires_in'] + int(time.time()))
+        except Exception:
             raise requests.RequestException(response=response)
