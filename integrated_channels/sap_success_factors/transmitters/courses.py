@@ -8,23 +8,24 @@ from integrated_channels.sap_success_factors.transmitters import SuccessFactorsT
 class SuccessFactorsCourseTransmitter(SuccessFactorsTransmitterBase):
     """
     This endpoint is intended to carry out an export of course data to SuccessFactors for a given Enterprise.
-
-    Implementation will look something like:
-
-    Perform basic validation on the input (e.g. is this Enterprise configured for SuccessFactors?)
-
-    Retrieve oauth access token from SuccessFactors, based on OCNWebServicesEnterpriseCustomerConfiguration.
-    This can either initiate generating a new token, or using an unexpired token which we have cached.
-
-    Find which catalog is associated with the enterprise customer.
-
-    Retrieve course data in the catalog from the Catalog API.
-
-    Transform course data into the format expected by SuccessFactors.
-
-    Send the transformed course data to SuccessFactors using the configured endpoint
-    (taken from OCNWebServicesConfiguration and OCNWebServicesEnterpriseCustomerConfiguration) and the oauth token.
-
-    Record information about the success/failure of posting the course data to SuccessFactors in
-     CourseContentExportAudit.
     """
+
+    def __init__(self, enterprise_configuration):
+        """
+        Args:
+            enterprise_configuration (SAPSuccessFactorsEntepriseCustomerConfiguration): An enterprise customers's
+            configuration model for connecting with SAP SuccessFactors
+
+        Returns:
+            An instance of SuccessFactorsCourseTransmitter
+        """
+        super(SuccessFactorsCourseTransmitter, self).__init__(enterprise_configuration)
+
+    def transmit(self, payload):
+        """
+        Send a course data import call to SAP SuccessFactors using the client.
+
+        Args:
+            payload (dict): The learner completion data payload to send to SAP SuccessFactors
+        """
+        self.client.send_course_import(payload)
