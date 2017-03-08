@@ -5,7 +5,7 @@ Tests for clients in integrated_channels.
 from __future__ import absolute_import, unicode_literals, with_statement
 
 import datetime
-
+import time
 import requests
 import responses
 from integrated_channels.sap_success_factors.client import SAPSuccessFactorsAPIClient
@@ -22,7 +22,7 @@ def test_get_oauth_access_token():
     client_secret = "client_secret"
     company_id = "company_id"
     user_id = "user_id"
-    expires_in = 1485383526
+    expires_in = 1800
     access_token = "access_token"
 
     SAPSuccessFactorsGlobalConfiguration.objects.create(
@@ -31,8 +31,8 @@ def test_get_oauth_access_token():
         oauth_api_path=oauth_api_path
     )
 
-    expected_response_body = {"expiresIn": expires_in, "access_token": access_token}
-    expected_response = (access_token, datetime.datetime.utcfromtimestamp(expires_in))
+    expected_response_body = {"expires_in": expires_in, "access_token": access_token}
+    expected_response = (access_token, datetime.datetime.utcfromtimestamp(expires_in + int(time.time())))
 
     responses.add(  # pylint: disable=no-member
         responses.POST,  # pylint: disable=no-member
