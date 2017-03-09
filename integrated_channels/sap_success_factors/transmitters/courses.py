@@ -3,6 +3,8 @@ Class for transmitting course data to SuccessFactors.
 """
 from __future__ import absolute_import, unicode_literals
 from integrated_channels.sap_success_factors.transmitters import SuccessFactorsTransmitterBase
+from integrated_channels.sap_success_factors.models import CatalogTransmissionAudit
+from requests import RequestException
 
 
 class SuccessFactorsCourseTransmitter(SuccessFactorsTransmitterBase):
@@ -13,7 +15,7 @@ class SuccessFactorsCourseTransmitter(SuccessFactorsTransmitterBase):
     def __init__(self, enterprise_configuration):
         """
         Args:
-            enterprise_configuration (SAPSuccessFactorsEntepriseCustomerConfiguration): An enterprise customers's
+            enterprise_configuration (SAPSuccessFactorsEnterpriseCustomerConfiguration): An enterprise customers's
             configuration model for connecting with SAP SuccessFactors
 
         Returns:
@@ -26,6 +28,22 @@ class SuccessFactorsCourseTransmitter(SuccessFactorsTransmitterBase):
         Send a course data import call to SAP SuccessFactors using the client.
 
         Args:
-            payload (dict): The learner completion data payload to send to SAP SuccessFactors
+            payload (list): The OCN course import data payload to send to SAP SuccessFactors
         """
-        self.client.send_course_import(payload)
+        try:
+            code, body = self.client.send_course_import(payload)
+        except RequestException as request_exception:
+            code = 500
+            body = request_exception.message
+
+        error_message = body if code >= 400 else None
+
+        catalog_transmission_audit = CatalogTransmissionAudit(
+            enterprise_customer_uuid=self.enterprise_configuration.enterprise_customer.uuid,
+            total_courses=len(payload),
+            status=code,
+            error_message=error_message
+        )
+
+        catalog_transmission_audit.save()
+        return catalog_transmission_audit

@@ -18,18 +18,11 @@ class SuccessFactorsTransmitterBase:  # pylint: disable=metaclass-assignment
         The base init function that initializes a SAPSuccessFactorsAPIClient for subsequent calls.
 
         Args:
-            enterprise_configuration (SAPSuccessFactorsEntepriseCustomerConfiguration): An enterprise customers's
+            enterprise_configuration (SAPSuccessFactorsEnterpriseCustomerConfiguration): An enterprise customers's
             configuration model for connecting with SAP SuccessFactors
         """
-        oauth_access_token = SAPSuccessFactorsAPIClient.get_oauth_access_token(
-            enterprise_configuration.sapsf_base_url,
-            enterprise_configuration.key,
-            enterprise_configuration.secret,
-            enterprise_configuration.sapsf_company_id,
-            enterprise_configuration.sapsf_user_id
-        )
-
-        self.client = SAPSuccessFactorsAPIClient(enterprise_configuration.sapsf_base_url, oauth_access_token)
+        self.enterprise_configuration = enterprise_configuration
+        self.client = SAPSuccessFactorsAPIClient(enterprise_configuration)
 
     @abstractmethod
     def transmit(self, payload):

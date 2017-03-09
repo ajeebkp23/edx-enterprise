@@ -18,6 +18,8 @@ class SAPSuccessFactorsAPIClient(object):
      completion status endpoints.
     """
 
+    SESSION_TIMEOUT = 5
+
     @staticmethod
     def get_oauth_access_token(url_base, client_id, client_secret, company_id, user_id):
         """ Retrieves OAuth 2.0 access token using the client credentials grant.
@@ -61,34 +63,50 @@ class SAPSuccessFactorsAPIClient(object):
         except Exception:
             raise requests.RequestException(response=response)
 
-    def __init__(self, url_base, oauth_access_token, timeout=5):
+    def __init__(self, enterprise_configuration):
         """
         Instantiate a new client.
+
+        Args:
+            enterprise_configuration (SAPSuccessFactorsEnterpriseCustomerConfiguration): An enterprise customers's
+            configuration model for connecting with SAP SuccessFactors
 
         Raises:
             ValueError: If a URL or access token are not provided.
         """
 
-        if not url_base:
-            raise ValueError('An API url must be supplied!')
+        if not enterprise_configuration:
+            raise ValueError('An SAPSuccessFactorsEnterpriseCustomerConfiguration must be supplied!')
 
-        if not oauth_access_token:
-            raise ValueError('An API access token must be supplied!')
+        self.enterprise_configuration = enterprise_configuration
+        self._create_session()
+        super(SAPSuccessFactorsAPIClient, self).__init__()
 
-        self.url_base = url_base
-
+    def _create_session(self):
+        """
+        Instantiate a new session object for use in connecting with SAP SuccessFactors
+        """
         session = requests.Session()
-        session.timeout = timeout
+        session.timeout = self.SESSION_TIMEOUT
+
+        oauth_access_token, expires_at = SAPSuccessFactorsAPIClient.get_oauth_access_token(
+            self.enterprise_configuration.sapsf_base_url,
+            self.enterprise_configuration.key,
+            self.enterprise_configuration.secret,
+            self.enterprise_configuration.sapsf_company_id,
+            self.enterprise_configuration.sapsf_user_id
+        )
+
         session.headers['Authorization'] = 'Bearer {}'.format(oauth_access_token)
         self.session = session
-        super(SAPSuccessFactorsAPIClient, self).__init__()
+        self.expires_at = expires_at
 
     def send_completion_status(self, payload):
         """
         Send a completion status payload to the SuccessFactors OCN Completion Status endpoint
 
         Args:
-            payload (str): JSON object (serialized from LearnerDataTransmissionAudit)
+            payload: JSON object (serialized from LearnerDataTransmissionAudit)
                 containing completion status fields per SuccessFactors documentation.
 
         Returns:
@@ -97,17 +115,15 @@ class SAPSuccessFactorsAPIClient(object):
             HTTPError: if we received a failure response code from SAP SuccessFactors
         """
         global_sap_config = SAPSuccessFactorsGlobalConfiguration.current()
-        url = self.url_base + global_sap_config.completion_status_api_path
-        response = self.session.post(url, json=payload)
-        response.raise_for_status()
-        return response.json()
+        url = self.enterprise_configuration.sapsf_base_url + global_sap_config.completion_status_api_path
+        return self._call_post(url, payload)
 
     def send_course_import(self, payload):
         """
         Send courses payload to the SuccessFactors OCN Course Import endpoint
 
         Args:
-            payload (str): JSON object containing course import data per SuccessFactors documentation.
+            payload: JSON object containing course import data per SuccessFactors documentation.
 
         Returns:
             The body of the response from SAP SuccessFactors, if successful
@@ -115,7 +131,21 @@ class SAPSuccessFactorsAPIClient(object):
             HTTPError: if we received a failure response code from SAP SuccessFactors
         """
         global_sap_config = SAPSuccessFactorsGlobalConfiguration.current()
-        url = self.url_base + global_sap_config.course_api_path
-        response = self.session.post(url, json=payload)
-        response.raise_for_status()
-        return response.json()
+        url = self.enterprise_configuration.sapsf_base_url + global_sap_config.course_api_path
+        return self._call_post(url, payload)
+
+    def _call_post(self, url, payload):
+        """
+        Make a post request using the session object to a SuccessFactors endpoint.
+
+        Args:
+            url (str): The url to post to.
+            payload: The payload to post.
+        """
+        now = datetime.datetime.utcnow()
+        if now >= self.expires_at:
+            # Create a new session with a valid token
+            self.session.close()
+            self._create_session()
+        response = self.session.post(url, json=payload.serialize())
+        return response.status_code, response.text

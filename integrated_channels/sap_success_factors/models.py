@@ -10,7 +10,7 @@ from simple_history.models import HistoricalRecords
 from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
 
-from model_utils.models import TimeFramedModel
+from model_utils.models import TimeStampedModel
 
 from integrated_channels.integrated_channel.models import EnterpriseCustomerPluginConfiguration
 
@@ -115,7 +115,7 @@ class LearnerDataTransmissionAudit(models.Model):
 
 
 @python_2_unicode_compatible
-class CatalogTransmissionAudit(TimeFramedModel):
+class CatalogTransmissionAudit(TimeStampedModel):
     """
     The summary of instances when the course catalog was sent to SuccessFactors for an enterprise.
     """
