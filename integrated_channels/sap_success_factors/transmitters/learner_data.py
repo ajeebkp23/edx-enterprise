@@ -35,7 +35,7 @@ class SuccessFactorsLearnerDataTransmitter(SuccessFactorsTransmitterBase):
         previous_transmissions = LearnerDataTransmissionAudit.objects.filter(
             enterprise_course_enrollment_id=enterprise_enrollment_id,
             completed_timestamp=payload.completed_timestamp,
-            error_message=None
+            error_message=''
         )
         if previous_transmissions.exists():
             # We've already sent a completion status call for this enrollment and certificate generation
@@ -45,9 +45,9 @@ class SuccessFactorsLearnerDataTransmitter(SuccessFactorsTransmitterBase):
             code, body = self.client.send_completion_status(payload.payload())
         except RequestException as request_exception:
             code = 500
-            body = request_exception.message
+            body = str(request_exception)
 
-        payload.status = code
-        payload.error_message = body if code >= 400 else None
+        payload.status = str(code)
+        payload.error_message = body if code >= 400 else ''
         payload.save()
         return payload

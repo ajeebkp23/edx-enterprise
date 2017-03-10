@@ -113,6 +113,21 @@ class LearnerDataTransmissionAudit(models.Model):
         """
         return self.__str__()
 
+    #  This will be replaced after rebasing once PR #59 is merged and this is rebased on master
+    def payload(self):
+        """
+        Convert the audit record's fields into SAP SuccessFactors key/value pairs.
+        """
+        return dict(
+            userID=self.sapsf_user_id,
+            courseID=self.course_id,
+            providerID='EDX',
+            # SAP SuccessFactors requires strings, not boolean values.
+            courseCompleted="true" if self.course_completed else "false",
+            completedTimestamp=self.completed_timestamp,
+            grade=self.grade,
+        )
+
 
 @python_2_unicode_compatible
 class CatalogTransmissionAudit(TimeStampedModel):

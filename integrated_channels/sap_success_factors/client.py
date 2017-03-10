@@ -60,7 +60,7 @@ class SAPSuccessFactorsAPIClient(object):
         data = response.json()
         try:
             return data['access_token'], datetime.datetime.utcfromtimestamp(data['expires_in'] + int(time.time()))
-        except Exception:
+        except KeyError:
             raise requests.RequestException(response=response)
 
     def __init__(self, enterprise_configuration):
@@ -80,7 +80,6 @@ class SAPSuccessFactorsAPIClient(object):
 
         self.enterprise_configuration = enterprise_configuration
         self._create_session()
-        super(SAPSuccessFactorsAPIClient, self).__init__()
 
     def _create_session(self):
         """
@@ -147,5 +146,5 @@ class SAPSuccessFactorsAPIClient(object):
             # Create a new session with a valid token
             self.session.close()
             self._create_session()
-        response = self.session.post(url, json=payload.serialize())
+        response = self.session.post(url, json=payload)
         return response.status_code, response.text

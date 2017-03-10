@@ -39,7 +39,7 @@ PyJWT==1.4.2              # via djangorestframework-jwt, edx-rest-api-client
 pyparsing==2.2.0          # via packaging
 python-dateutil==2.6.0    # via edx-drf-extensions
 pytz==2016.10             # via babel
-readme-renderer==16.0
+readme-renderer==17.2
 requests==2.13.0
 restructuredtext-lint==1.0.1  # via doc8
 shortuuid==0.5.0          # via edx-django-oauth2-provider

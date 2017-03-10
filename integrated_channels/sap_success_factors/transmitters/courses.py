@@ -34,14 +34,14 @@ class SuccessFactorsCourseTransmitter(SuccessFactorsTransmitterBase):
             code, body = self.client.send_course_import(payload)
         except RequestException as request_exception:
             code = 500
-            body = request_exception.message
+            body = str(request_exception)
 
-        error_message = body if code >= 400 else None
+        error_message = body if code >= 400 else ''
 
         catalog_transmission_audit = CatalogTransmissionAudit(
             enterprise_customer_uuid=self.enterprise_configuration.enterprise_customer.uuid,
             total_courses=len(payload),
-            status=code,
+            status=str(code),
             error_message=error_message
         )
 
