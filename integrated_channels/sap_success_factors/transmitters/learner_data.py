@@ -13,17 +13,6 @@ class SuccessFactorsLearnerDataTransmitter(SuccessFactorsTransmitterBase):
     sent to SuccessFactors.
     """
 
-    def __init__(self, enterprise_configuration):
-        """
-        Args:
-            enterprise_configuration (SAPSuccessFactorsEnterpriseCustomerConfiguration): An enterprise customers's
-            configuration model for connecting with SAP SuccessFactors
-
-        Returns:
-            An instance of SuccessFactorsLearnerDataTransmitter
-        """
-        super(SuccessFactorsLearnerDataTransmitter, self).__init__(enterprise_configuration)
-
     def transmit(self, payload):
         """
         Send a completion status call to SAP SuccessFactors using the client.

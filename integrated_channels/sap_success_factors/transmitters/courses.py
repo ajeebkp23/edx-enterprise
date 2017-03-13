@@ -12,17 +12,6 @@ class SuccessFactorsCourseTransmitter(SuccessFactorsTransmitterBase):
     This endpoint is intended to carry out an export of course data to SuccessFactors for a given Enterprise.
     """
 
-    def __init__(self, enterprise_configuration):
-        """
-        Args:
-            enterprise_configuration (SAPSuccessFactorsEnterpriseCustomerConfiguration): An enterprise customers's
-            configuration model for connecting with SAP SuccessFactors
-
-        Returns:
-            An instance of SuccessFactorsCourseTransmitter
-        """
-        super(SuccessFactorsCourseTransmitter, self).__init__(enterprise_configuration)
-
     def transmit(self, payload):
         """
         Send a course data import call to SAP SuccessFactors using the client.

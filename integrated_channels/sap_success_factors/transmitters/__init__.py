@@ -29,4 +29,3 @@ class SuccessFactorsTransmitterBase:  # pylint: disable=metaclass-assignment
         """
         The abstract method for making particular calls to SAP SuccessFactors, implemented by each child class.
         """
-        raise NotImplementedError("Implemented in concrete subclass.")

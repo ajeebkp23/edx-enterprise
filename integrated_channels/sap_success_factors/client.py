@@ -78,6 +78,7 @@ class SAPSuccessFactorsAPIClient(object):
         if not enterprise_configuration:
             raise ValueError('An SAPSuccessFactorsEnterpriseCustomerConfiguration must be supplied!')
 
+        self.global_sap_config = SAPSuccessFactorsGlobalConfiguration.current()
         self.enterprise_configuration = enterprise_configuration
         self._create_session()
 
@@ -113,8 +114,7 @@ class SAPSuccessFactorsAPIClient(object):
         Raises:
             HTTPError: if we received a failure response code from SAP SuccessFactors
         """
-        global_sap_config = SAPSuccessFactorsGlobalConfiguration.current()
-        url = self.enterprise_configuration.sapsf_base_url + global_sap_config.completion_status_api_path
+        url = self.enterprise_configuration.sapsf_base_url + self.global_sap_config.completion_status_api_path
         return self._call_post(url, payload)
 
     def send_course_import(self, payload):
@@ -129,8 +129,7 @@ class SAPSuccessFactorsAPIClient(object):
         Raises:
             HTTPError: if we received a failure response code from SAP SuccessFactors
         """
-        global_sap_config = SAPSuccessFactorsGlobalConfiguration.current()
-        url = self.enterprise_configuration.sapsf_base_url + global_sap_config.course_api_path
+        url = self.enterprise_configuration.sapsf_base_url + self.global_sap_config.course_api_path
         return self._call_post(url, payload)
 
     def _call_post(self, url, payload):
